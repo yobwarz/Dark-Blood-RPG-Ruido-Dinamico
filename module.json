@@ -1,0 +1,41 @@
+{
+  "id": "sangue-escuro-ruido",
+  "title": "Sangue Escuro: Ruído Dinâmico",
+  "description": "Ruído por cena, propagação aproximada, mapa de pressão do Mestre, gatilhos nativos e reações configuráveis por zona. Módulo opcional independente da API do sistema.",
+  "version": "0.1.1",
+  "authors": [
+    {
+      "name": "Sangue Escuro — Yob Warz"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "sangue-escuro",
+        "type": "system",
+        "compatibility": {
+          "minimum": "0.8.10"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "assets/ruido.css"
+  ],
+  "flags": {
+    "sangue-escuro": {
+      "tipo": "auxiliar"
+    }
+  },
+  "license": "LICENSE",
+  "url": "https://github.com/yobwarz/Dark-Blood-RPG-Ruido-Dinamico",
+  "manifest": "https://raw.githubusercontent.com/yobwarz/Dark-Blood-RPG-Ruido-Dinamico/main/module.json",
+  "download": "https://raw.githubusercontent.com/yobwarz/Dark-Blood-RPG-Ruido-Dinamico/v0.1.1/dist/sangue-escuro-ruido.zip"
+}

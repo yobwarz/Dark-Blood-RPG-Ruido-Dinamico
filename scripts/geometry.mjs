@@ -1,0 +1,14 @@
+import {all,segmentCross} from './model.mjs';
+export const size=s=>Number(s.grid?.size)>0?Number(s.grid.size):100;
+export function bounds(s){const d=s.getDimensions?.()??{};return {x:Number(d.sceneX??0),y:Number(d.sceneY??0),w:Number(d.sceneWidth??s.width??4000),h:Number(d.sceneHeight??s.height??3000)};}
+export const center=(t,s)=>({x:Number(t.x)+Number(t.width??1)*size(s)/2,y:Number(t.y)+Number(t.height??1)*size(s)/2});
+export function tokenOrigin(actor,sceneId,tokenId){const scenes=sceneId?[game.scenes.get(sceneId)].filter(Boolean):all(game.scenes).filter(s=>s.active);const found=scenes.flatMap(s=>all(s.tokens).filter(t=>t.actor?.uuid===actor?.uuid||t.actorId===actor?.id).filter(t=>!tokenId||t.id===tokenId).map(t=>({scene:s,token:t,point:center(t,s)})));if(found.length!==1)throw Error('Não há um token único da origem. Selecione seu token na cena e use Chamar Atenção ou a macro do módulo.');return found[0];}
+export function movePoint(scene,token,point,steps){const start=center(token,scene),distance=Math.hypot(point.x-start.x,point.y-start.y);if(!distance)return null;const travel=Math.min(distance,steps*size(scene));return {x:Math.round(token.x+(point.x-start.x)/distance*travel),y:Math.round(token.y+(point.y-start.y)/distance*travel)};}
+export function clearPath(scene,token,to){
+ const unit=size(scene),w=(token.width??1)*unit,h=(token.height??1)*unit,b=bounds(scene);if(to.x<b.x||to.y<b.y||to.x+w>b.x+b.w||to.y+h>b.y+b.h)return false;
+ const offsets=[{x:w/2,y:h/2},{x:1,y:1},{x:w-1,y:1},{x:1,y:h-1},{x:w-1,y:h-1}];
+ for(const wall of all(scene.walls)){if(wall.move<=0||wall.door>0&&wall.ds===1)continue;const c=wall.c;if(c?.length!==4)continue;for(const o of offsets)if(segmentCross({x:token.x+o.x,y:token.y+o.y},{x:to.x+o.x,y:to.y+o.y},{x:c[0],y:c[1]},{x:c[2],y:c[3]}))return false;const corners=[{x:to.x,y:to.y},{x:to.x+w,y:to.y},{x:to.x+w,y:to.y+h},{x:to.x,y:to.y+h}];for(let i=0;i<4;i++)if(segmentCross(corners[i],corners[(i+1)%4],{x:c[0],y:c[1]},{x:c[2],y:c[3]}))return false;if(c[0]>to.x&&c[0]<to.x+w&&c[1]>to.y&&c[1]<to.y+h)return false;}
+ for(const other of all(scene.tokens)){if(other.id===token.id)continue;const ow=(other.width??1)*unit,oh=(other.height??1)*unit;const loX=Math.min(token.x,to.x),loY=Math.min(token.y,to.y),hiX=Math.max(token.x,to.x)+w,hiY=Math.max(token.y,to.y)+h;if(loX<other.x+ow&&hiX>other.x&&loY<other.y+oh&&hiY>other.y)return false;}
+ return true;
+}
+export function spawnPositions(scene,z,width=1,height=1){const unit=size(scene),spots=[];for(let row=0;row<8&&spots.length<z.count;row++)for(let col=0;col<8&&spots.length<z.count;col++){const x=z.x+col*width*unit,y=z.y+row*height*unit;if(x+width*unit>z.x+z.w||y+height*unit>z.y+z.h)continue;const ghost={id:'',x,y,width,height};if(clearPath(scene,ghost,{x,y}))spots.push({x,y});}if(spots.length<z.count)throw Error('Não há espaço livre suficiente na zona para criar os tokens.');return spots;}
